@@ -98,9 +98,16 @@ createExcelAttendanceReport = function (issuesIntervalData, fileName) {
             const workerData = issuesIntervalData[key];
             const workerSheetData = new WorkerTableSheet(headers);
             workerSheetData.fillJiraLines(workerData, headers);
-            //workerSheetData.summarizeDailyTimeWork();
-            let ws = XLSX.utils.json_to_sheet(workerSheetData.xlsxData, workerSheetData.headers);
-            XLSX.utils.book_append_sheet(wb, ws, key);
+            let worksheet = XLSX.utils.json_to_sheet(workerSheetData.xlsxData);  //, workerSheetData.headers
+            /* fix headers */
+            XLSX.utils.sheet_add_aoa(worksheet, [this.headerLine], { origin: "A2" });
+            /* column width */
+            worksheet["!cols"] = [ {wch:25} ];
+            for(let i=0; i<headers.length; i++) {
+                worksheet["!cols"].push({wch: 15});
+            }
+            //workerSheetData.summarizeDailyTimeWork(ws);
+            XLSX.utils.book_append_sheet(wb, worksheet, key);
         });
         const excelBuffer = XLSX.write(wb, {bookType: 'xlsx', type: 'array'} );
         const date = Date.now();
