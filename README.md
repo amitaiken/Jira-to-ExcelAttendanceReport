@@ -1,4 +1,4 @@
-# -Summarize-DB-to-Excel
+# Summarize-DB-to-Excel
 This repository describes how to summarize and convert database represented with json object, to Excel file, indexed by dates.
 ## Business logic
 Assume you have data in one data unit system, and you want to deliver it to other data unit system.
