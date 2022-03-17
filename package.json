@@ -1,0 +1,15 @@
+{
+  "name": "Summarize-DB-to-Excel",
+  "version": "1.0.0",
+  "dependencies": {
+    "@voicenter-team/mysql-dynamic-cluster": "^1.2.1",
+    "xlsx": "^0.18.3"
+  },
+  "devDependencies": {
+    "fastify": "^3.27.4"
+  },
+  "scripts": {
+    "start": "node --harmony index.js",
+    "serve": "nodemon --harmony index.js"
+  }
+}
