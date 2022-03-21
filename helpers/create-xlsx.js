@@ -8,6 +8,10 @@ function getKeyByValue(object, value) {
     return Object.keys(object).find(key => object[key] === value);
 }
 
+Array.prototype.insert = function ( index, item ) {
+    this.splice( index, 0, item );
+};
+
 Date.prototype.addDays = function(days) {
     let date = new Date(this.valueOf());
     date.setDate(date.getDate() + days);
@@ -45,18 +49,11 @@ class XLSXGenerator {
             Object.keys(issuesIntervalData).forEach(key => {
                 const workerData = issuesIntervalData[key];
                 const workerSheetData = new WorkerTableSheet(headers);
-                workerSheetData.fillJiraLines(workerData, headers);
-                let worksheet = XLSX.utils.json_to_sheet(workerSheetData.xlsxData);  //, workerSheetData.headers
-                /* fix headers */
-                XLSX.utils.sheet_add_aoa(worksheet, [this.headerLine], { origin: "A2" });
-                /* column width */
-                worksheet["!cols"] = [ {wch:25} ];
-                for(let i=0; i<headers.length; i++) {
-                    worksheet["!cols"].push({wch: 15});
-                }
-                //XLSX.utils.sheet_set_array_formula(worksheet, "C5", "SUM(C3:C4)");
-                //workerSheetData.summarizeDailyTimeWork(ws);
-                XLSX.utils.book_append_sheet(wb, worksheet, key);
+                /* fill jira issue lines */
+                workerSheetData.fillJiraLines(workerData);
+                /* Add total line */
+                //workerSheetData.summarizeDailyTimeWork(worksheet);
+                XLSX.utils.book_append_sheet(wb, workerSheetData.worksheet, key);
             });
             const excelBuffer = XLSX.write(wb, {bookType: 'xlsx', type: 'array'} );
             const date = Date.now();
@@ -73,9 +70,11 @@ class WorkerTableSheet {
     countHeaders = 0;
     countLines = 0;
     headers = [];
-    headerLine = ['JiraIssues/Dates'];
+    workerXLSXLines = [];
+    headerLine = [];
+    firstColumn = {name: 'JiraIssues/Dates'};
     lineNames = [];
-    xlsxData = [];
+    worksheet = [];
     constructor(headers) {
         this.headers = headers;
         headers.forEach(header => {
@@ -83,11 +82,25 @@ class WorkerTableSheet {
             this.headerLine.push(date);
             this.countHeaders += 1;
         });
-        this.xlsxData.push(this.headerLine);
+        this.worksheet =  XLSX.utils.json_to_sheet(this.headerLine);
+        /* fix headers */
+        XLSX.utils.sheet_add_aoa(this.worksheet, [this.headerLine], { origin: "A1" });
+        XLSX.utils.sheet_add_aoa(this.worksheet, [['JiraIssues/Dates']], { origin: "A1" });
+        /* column width */
+        this.worksheet["!cols"] = [ {wch:25} ];
+        for(let i=0; i<headers.length; i++) {
+            this.worksheet["!cols"].push({wch: 15});
+        }
+
+        //worksheet["cols"].w = 21;
+        //worksheet = workerSheetData.fillJiraLines(workerData, worksheet);//, workerSheetData.headers
+        //this.worksheet =  XLSX.utils.sheet_add_aoa(worksheet,[this.xlsxData],{ origin: -1 });
+        //this.xlsxData.push(this.headerLine);
     }
 
-    fillJiraLines(workerJiraIssues, headers) {
-        workerJiraIssues.forEach(workerJira => {
+     fillJiraLines(workerData) {
+        //this.worksheet = XLSX.utils.aoa_to_sheet(worksheet);//workerData, worksheet
+        workerData.forEach(workerJira => {
             const jiraIssues = [];
             const jiraIssue = workerJira.project_name + '-' + workerJira.issueid;
             jiraIssues.push(jiraIssue);
@@ -98,33 +111,22 @@ class WorkerTableSheet {
             for (let i = 0;  i<this.countHeaders; i++) {
                 if (taskIndex < taskListLength) {
                     let currentTaskDate = new Date(jiraTaskList[taskIndex].logYear, (jiraTaskList[taskIndex].logMonth - 1), jiraTaskList[taskIndex].logDay);
-                    if ((headers[i]).getTime() === currentTaskDate.getTime()) {   //d1.getTime() === d2.getTime()
+                    if ((this.headers[i]).getTime() === currentTaskDate.getTime()) {   //d1.getTime() === d2.getTime()
                         jiraIssues.push(jiraTaskList[taskIndex].timeworked);
                         taskIndex += 1;
                     } else jiraIssues.push(0);
                 }
                 else jiraIssues.push(0);
             }
-            this.xlsxData.push(jiraIssues);
+            this.workerXLSXLines.push(jiraIssues);
+            //XLSX.utils.sheet_add_aoa(this.worksheet,[jiraIssues],{ origin: "A2" });
         });
+        XLSX.utils.sheet_add_aoa(this.worksheet,this.workerXLSXLines,{ origin: "A2" });
+        //XLSX.utils.sheet_add_aoa(this.worksheet,[jiraIssues],{ origin: -1 });
     }
 
     summarizeDailyTimeWork(worksheet) {
-        let summarizeDailyArray = ['Total:'];
-        if(this.xlsxData[1][0]) for (let i = 1; i <= this.countHeaders; i++){
-            let summarizeDaily = 0;
-            if(this.xlsxData[i][0]) {
-                for (let j = 1; j < this.countLines; j++) {
-                    if (this.xlsxData[i][j]) summarizeDaily += this.xlsxData[i][j];
-                    XLSX.utils.sheet_set_array_formula(worksheet, "C1", "SUM(A1:A3*B1:B3)");
-                }
-            }
-            summarizeDailyArray.push(summarizeDaily);
-            summarizeDaily = 0;
-        }
-        this.xlsxData.push(summarizeDailyArray);
-    }
-}
+}}
 
 module.exports = XLSXGenerator;
 

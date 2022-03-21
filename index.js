@@ -23,11 +23,8 @@ fastify.get('/', async function (request, reply) {
     const ReportData = await runQurey();
     const hrExcelAttendanceReport = new XLSXGenerator(ReportData);
     const exelFile = await hrExcelAttendanceReport.createExcelAttendanceReport(hrExcelAttendanceReport.reportData, 'tasks-summarize-sheet.xlsx');
-
     reply.header('Content-Type', 'application/vnd.ms-excel').send(exelFile)
 })
-
-
 
 const startWebService = async () => {
     try {
