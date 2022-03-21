@@ -109,20 +109,22 @@ class WorkerTableSheet {
             this.countLines += taskListLength;
             let taskIndex = 0;
             for (let i = 0;  i<this.countHeaders; i++) {
+                let timeWork = 0;
                 if (taskIndex < taskListLength) {
                     let currentTaskDate = new Date(jiraTaskList[taskIndex].logYear, (jiraTaskList[taskIndex].logMonth - 1), jiraTaskList[taskIndex].logDay);
-                    if ((this.headers[i]).getTime() === currentTaskDate.getTime()) {   //d1.getTime() === d2.getTime()
-                        jiraIssues.push(jiraTaskList[taskIndex].timeworked);
+                    if ((this.headers[i]).getTime() === currentTaskDate.getTime()) {
+                        //d1.getTime() === d2.getTime()
+                        //jiraIssues.push(jiraTaskList[taskIndex].timeworked);
+                        timeWork = jiraTaskList[taskIndex].timeworked
                         taskIndex += 1;
-                    } else jiraIssues.push(0);
+                    }
                 }
-                else jiraIssues.push(0);
+                //timeWork = getTimeFormat(timeWork);
+                jiraIssues.push(timeWork);
             }
             this.workerXLSXLines.push(jiraIssues);
-            //XLSX.utils.sheet_add_aoa(this.worksheet,[jiraIssues],{ origin: "A2" });
         });
-        XLSX.utils.sheet_add_aoa(this.worksheet,this.workerXLSXLines,{ origin: "A2" });
-        //XLSX.utils.sheet_add_aoa(this.worksheet,[jiraIssues],{ origin: -1 });
+        XLSX.utils.sheet_add_aoa(this.worksheet,this.workerXLSXLines,{origin: "A2"});
     }
 
     summarizeDailyTimeWork(worksheet) {
