@@ -113,8 +113,6 @@ class WorkerTableSheet {
                 if (taskIndex < taskListLength) {
                     let currentTaskDate = new Date(jiraTaskList[taskIndex].logYear, (jiraTaskList[taskIndex].logMonth - 1), jiraTaskList[taskIndex].logDay);
                     if ((this.headers[i]).getTime() === currentTaskDate.getTime()) {
-                        //d1.getTime() === d2.getTime()
-                        //jiraIssues.push(jiraTaskList[taskIndex].timeworked);
                         timeWork = jiraTaskList[taskIndex].timeworked
                         taskIndex += 1;
                     }
