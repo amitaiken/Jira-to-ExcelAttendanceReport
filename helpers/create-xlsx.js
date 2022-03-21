@@ -52,7 +52,7 @@ class XLSXGenerator {
                 /* fill jira issue lines */
                 workerSheetData.fillJiraLines(workerData);
                 /* Add total line */
-                //workerSheetData.summarizeDailyTimeWork(worksheet);
+                workerSheetData.summarizeDailyTimeWork(workerData);
                 XLSX.utils.book_append_sheet(wb, workerSheetData.worksheet, key);
             });
             const excelBuffer = XLSX.write(wb, {bookType: 'xlsx', type: 'array'} );
@@ -91,11 +91,6 @@ class WorkerTableSheet {
         for(let i=0; i<headers.length; i++) {
             this.worksheet["!cols"].push({wch: 15});
         }
-
-        //worksheet["cols"].w = 21;
-        //worksheet = workerSheetData.fillJiraLines(workerData, worksheet);//, workerSheetData.headers
-        //this.worksheet =  XLSX.utils.sheet_add_aoa(worksheet,[this.xlsxData],{ origin: -1 });
-        //this.xlsxData.push(this.headerLine);
     }
 
      fillJiraLines(workerData) {
@@ -124,8 +119,21 @@ class WorkerTableSheet {
         });
         XLSX.utils.sheet_add_aoa(this.worksheet,this.workerXLSXLines,{origin: "A2"});
     }
-
-    summarizeDailyTimeWork(worksheet) {
+    summarizeDailyTimeWork(workerData) {
+        let sumLine = [];
+        let taskIndex = 0;
+        const countLines = workerData.length
+        for (let i = 0;  i<this.countHeaders-1 ; i++) {
+            let totalDateTime = 0;
+            for(let j = 0; j<countLines; j++) {
+                if (this.workerXLSXLines[i+1] && this.workerXLSXLines[i+1][j+1]>0) totalDateTime += this.workerXLSXLines[i+1][j+1];
+            }
+            sumLine.push(totalDateTime);
+        }
+        let totalLinesRow = 'B' + (countLines + 2);
+        XLSX.utils.sheet_add_aoa(this.worksheet,[sumLine],{origin: totalLinesRow});
+        totalLinesRow = 'A' + (countLines + 2);
+        XLSX.utils.sheet_add_aoa(this.worksheet, [['Total']], { origin: totalLinesRow });
 }}
 
 module.exports = XLSXGenerator;
