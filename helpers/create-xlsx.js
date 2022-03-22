@@ -86,6 +86,7 @@ class WorkerTableSheet {
         /* fix headers */
         XLSX.utils.sheet_add_aoa(this.worksheet, [this.headerLine], { origin: "A1" });
         XLSX.utils.sheet_add_aoa(this.worksheet, [['JiraIssues/Dates']], { origin: "A1" });
+        XLSX.utils.sheet_add_aoa(this.worksheet, [['Issue total work']], { origin: {c:this.countHeaders ,r:0} });
         /* column width */
         this.worksheet["!cols"] = [ {wch:25} ];
         for(let i=0; i<headers.length; i++) {
@@ -97,6 +98,7 @@ class WorkerTableSheet {
         //this.worksheet = XLSX.utils.aoa_to_sheet(worksheet);//workerData, worksheet
         workerData.forEach(workerJira => {
             const jiraIssues = [];
+            let issueTotalWork = 0;
             const jiraIssue = workerJira.project_name + '-' + workerJira.issueid;
             jiraIssues.push(jiraIssue);
             const jiraTaskList = workerJira.TaskList;
@@ -109,12 +111,14 @@ class WorkerTableSheet {
                     let currentTaskDate = new Date(jiraTaskList[taskIndex].logYear, (jiraTaskList[taskIndex].logMonth - 1), jiraTaskList[taskIndex].logDay);
                     if ((this.headers[i]).getTime() === currentTaskDate.getTime()) {
                         timeWork = jiraTaskList[taskIndex].timeworked
+                        issueTotalWork += timeWork;
                         taskIndex += 1;
                     }
                 }
                 //timeWork = getTimeFormat(timeWork);
                 jiraIssues.push(timeWork);
             }
+            jiraIssues.push(issueTotalWork);
             this.workerXLSXLines.push(jiraIssues);
         });
         XLSX.utils.sheet_add_aoa(this.worksheet,this.workerXLSXLines,{origin: "A2"});
@@ -122,18 +126,19 @@ class WorkerTableSheet {
     summarizeDateTimeWork(workerData) {
         let sumLine = [];
         const totalLineIndex = workerData.length;
-        for (let i = 1;  i<this.countHeaders ; i++) {
+        for (let i = 1;  i<(this.countHeaders+1) ; i++) {
             let totalDateTime = 0;
             for(let j = 0; j<totalLineIndex; j++) {
                 if (this.workerXLSXLines[j][i]) totalDateTime += this.workerXLSXLines[j][i];    //&& this.workerXLSXLines[i][j]>0
             }
             sumLine.push(totalDateTime);
         }
-        const targetCell =  {c:1, r:totalLineIndex};
+        const targetCell =  {c:1, r:(totalLineIndex+1)};
         XLSX.utils.sheet_add_aoa(this.worksheet, [sumLine], { origin: targetCell });
-        const totalTitleIndex = 'A' + (totalLineIndex+1);
+        const totalTitleIndex = {c:0, r:(totalLineIndex+1)};
         XLSX.utils.sheet_add_aoa(this.worksheet, [['Total']], { origin: totalTitleIndex });
-}}
+    }
+}
 
 module.exports = XLSXGenerator;
 
