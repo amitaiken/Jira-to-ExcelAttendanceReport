@@ -52,7 +52,7 @@ class XLSXGenerator {
                 /* fill jira issue lines */
                 workerSheetData.fillJiraLines(workerData);
                 /* Add total line */
-                workerSheetData.summarizeDailyTimeWork(workerData);
+                workerSheetData.summarizeDateTimeWork(workerData);
                 XLSX.utils.book_append_sheet(wb, workerSheetData.worksheet, key);
             });
             const excelBuffer = XLSX.write(wb, {bookType: 'xlsx', type: 'array'} );
@@ -103,7 +103,7 @@ class WorkerTableSheet {
             const taskListLength = jiraTaskList.length;
             this.countLines += taskListLength;
             let taskIndex = 0;
-            for (let i = 0;  i<this.countHeaders; i++) {
+            for (let i = 0;  i<this.countHeaders-1; i++) {
                 let timeWork = 0;
                 if (taskIndex < taskListLength) {
                     let currentTaskDate = new Date(jiraTaskList[taskIndex].logYear, (jiraTaskList[taskIndex].logMonth - 1), jiraTaskList[taskIndex].logDay);
@@ -119,23 +119,21 @@ class WorkerTableSheet {
         });
         XLSX.utils.sheet_add_aoa(this.worksheet,this.workerXLSXLines,{origin: "A2"});
     }
-    summarizeDailyTimeWork(workerData) {
+    summarizeDateTimeWork(workerData) {
         let sumLine = [];
-        let taskIndex = 0;
-        const countLines = workerData.length
-        for (let i = 0;  i<this.countHeaders-1 ; i++) {
+        const totalLineIndex = workerData.length;
+        for (let i = 1;  i<this.countHeaders ; i++) {
             let totalDateTime = 0;
-            for(let j = 0; j<countLines; j++) {
-                if (this.workerXLSXLines[i+1] && this.workerXLSXLines[i+1][j+1]>0) totalDateTime += this.workerXLSXLines[i+1][j+1];
+            for(let j = 0; j<totalLineIndex; j++) {
+                if (this.workerXLSXLines[j][i]) totalDateTime += this.workerXLSXLines[j][i];    //&& this.workerXLSXLines[i][j]>0
             }
             sumLine.push(totalDateTime);
         }
-        let totalLinesRow = 'B' + (countLines + 2);
-        XLSX.utils.sheet_add_aoa(this.worksheet,[sumLine],{origin: totalLinesRow});
-        totalLinesRow = 'A' + (countLines + 2);
-        XLSX.utils.sheet_add_aoa(this.worksheet, [['Total']], { origin: totalLinesRow });
+        const targetCell =  {c:1, r:totalLineIndex};
+        XLSX.utils.sheet_add_aoa(this.worksheet, [sumLine], { origin: targetCell });
+        const totalTitleIndex = 'A' + (totalLineIndex+1);
+        XLSX.utils.sheet_add_aoa(this.worksheet, [['Total']], { origin: totalTitleIndex });
 }}
 
 module.exports = XLSXGenerator;
-
 
