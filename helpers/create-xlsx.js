@@ -53,6 +53,7 @@ class XLSXGenerator {
                 workerSheetData.fillJiraLines(workerData);
                 /* Add total line */
                 workerSheetData.summarizeDateTimeWork(workerData);
+                //workerSheetData.defineCellsAsTime(workerData);
                 XLSX.utils.book_append_sheet(wb, workerSheetData.worksheet, key);
             });
             const excelBuffer = XLSX.write(wb, {bookType: 'xlsx', type: 'array'} );
@@ -95,7 +96,6 @@ class WorkerTableSheet {
     }
 
      fillJiraLines(workerData) {
-        //this.worksheet = XLSX.utils.aoa_to_sheet(worksheet);//workerData, worksheet
         workerData.forEach(workerJira => {
             const jiraIssues = [];
             let issueTotalWork = 0;
@@ -137,6 +137,30 @@ class WorkerTableSheet {
         XLSX.utils.sheet_add_aoa(this.worksheet, [sumLine], { origin: targetCell });
         const totalTitleIndex = {c:0, r:(totalLineIndex+1)};
         XLSX.utils.sheet_add_aoa(this.worksheet, [['Total']], { origin: totalTitleIndex });
+    }
+
+    defineCellsAsTime(workerData) {
+        //let TimeCellsRange = {s:{c:1,r:1},e:{c:(this.countHeaders+1),r:(this.countLines+1)}};
+        let columnLetter;
+        const lettersIndex = ['B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z','A']
+        for (let i = 1;  i<(this.countHeaders+2) ; i++) {
+            columnLetter = '';
+            let tempLetterIndex = i;
+            do {
+                columnLetter += lettersIndex[tempLetterIndex % lettersIndex.length];
+                tempLetterIndex = tempLetterIndex - lettersIndex.length;
+            } while (tempLetterIndex > 0);
+            for(let j = 2; j<this.countLines+1; j++) {
+                const cellAddress = columnLetter + j;
+                let cell = this.worksheet[cellAddress];
+                if (cell) {
+                    delete cell.w;
+                    cell.z = 'h:mm:ss';
+                    XLSX.utils.format_cell(cell);
+                }
+                //this.worksheet[cellAddress].z = 21;
+            }
+        }
     }
 }
 
