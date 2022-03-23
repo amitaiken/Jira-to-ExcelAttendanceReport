@@ -18,6 +18,31 @@ Date.prototype.addDays = function(days) {
     return date;
 }
 
+function reverseString(str) {     // program to reverse a string
+    let newString = "";
+    for (let i = str.length - 1; i >= 0; i--) {
+        newString += str[i];
+    }
+    return newString;
+}
+
+function convertToAbBase(columnNumber) {
+    let columnName = '';
+    while (columnNumber > 0) {
+        let Zremainder = columnNumber % 26;
+        if (Zremainder == 0) {                  // If remainder is 0, then a 'Z' must be there in output
+            columnName = columnName + "Z"
+            columnNumber = Math.floor(columnNumber / 26) - 1;
+        }
+        else {                                  // If remainder is non-zero
+            columnName = columnName + String.fromCharCode((Zremainder - 1) + 'A'.charCodeAt(0))
+            columnNumber = Math.floor(columnNumber / 26);
+        }
+    }
+    columnName = reverseString(columnName)
+    return columnName
+}
+
 function getDatesBetween(startDate, stopDate) {
     let dateArray = new Array();
     let currentDate =  new Date(startDate.getFullYear(), startDate.getMonth(), startDate.getDay());
@@ -53,7 +78,7 @@ class XLSXGenerator {
                 workerSheetData.fillJiraLines(workerData);
                 /* Add total line */
                 workerSheetData.summarizeDateTimeWork(workerData);
-                //workerSheetData.defineCellsAsTime(workerData);
+                workerSheetData.defineCellsAsTime(workerData);
                 XLSX.utils.book_append_sheet(wb, workerSheetData.worksheet, key);
             });
             const excelBuffer = XLSX.write(wb, {bookType: 'xlsx', type: 'array'} );
@@ -140,25 +165,17 @@ class WorkerTableSheet {
     }
 
     defineCellsAsTime(workerData) {
-        //let TimeCellsRange = {s:{c:1,r:1},e:{c:(this.countHeaders+1),r:(this.countLines+1)}};
         let columnLetter;
-        const lettersIndex = ['B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z','A']
         for (let i = 1;  i<(this.countHeaders+2) ; i++) {
-            columnLetter = '';
-            let tempLetterIndex = i;
-            do {
-                columnLetter += lettersIndex[tempLetterIndex % lettersIndex.length];
-                tempLetterIndex = tempLetterIndex - lettersIndex.length;
-            } while (tempLetterIndex > 0);
+            let letterIndex = convertToAbBase(i);
             for(let j = 2; j<this.countLines+1; j++) {
-                const cellAddress = columnLetter + j;
+                const cellAddress = letterIndex + j;
                 let cell = this.worksheet[cellAddress];
                 if (cell) {
                     delete cell.w;
                     cell.z = 'h:mm:ss';
                     XLSX.utils.format_cell(cell);
                 }
-                //this.worksheet[cellAddress].z = 21;
             }
         }
     }
