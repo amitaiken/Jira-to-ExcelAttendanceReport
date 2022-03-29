@@ -6,10 +6,12 @@ Hence, each system got a different business logic, each system got a different i
 ### Example
 In this example we take data from Jira system which index by issues, and deliver it to HR system which index by dates and used excel sheets
 ## API
-### createExcelAttendanceReport(issuesIntervalData, filename)
+### createExcelAttendanceReport(issuesIntervalData, fileName)
 #### Input:
-- issuesIntervalData - json object included start & end Dates and Data: workers data from jira system.
+1. issuesIntervalData - json object as illustrated on the example, included start & end Dates.
+2. file name.
 ```
+// issuesIntervalData example:
 {
   "Data": {
     "fName.sName": [
@@ -34,7 +36,6 @@ In this example we take data from Jira system which index by issues, and deliver
   "StartDate": "2022-02-07 01:00:19.000000"
 }
 ```
-- fileName: file name
 #### Output:
 - Excel Buffer(binary) file
 - tasks-summarize-sheet.xlsx file with time stamp added to sever
