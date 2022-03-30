@@ -5,6 +5,28 @@ Assume you have data in one data unit system, and you want to deliver it to othe
 Hence, each system got a different business logic, each system got a different indexes.
 ### Example
 In this example we take data from Jira system which index by issues, and deliver it to HR system which index by dates and used excel sheets
+
+## Installation
+Server:
+- Local:
+
+```
+npm install
+npm run serve
+```
+- Deploy:
+  npm
+```
+npm run start
+```
+### DataBase
+I used Mysql 8.0 <br>
+There are 2 sql files, one for the schema and one for example data:
+1. SQL/hr-excel-generator-schema.sql
+2. SQL/hr-excel-generator-example-data.sql
+
+run both of them, at first 1 and then 2
+
 ## API
 ### createExcelAttendanceReport(issuesIntervalData, fileName)
 #### Input:
